@@ -1,27 +1,63 @@
 const ClothingItem = require("../models/clothingItem");
 const { errorCode400, errorCode404, errorCode500 } = require("../utils/errors");
 
-const createItem = (req, res) => {
-  console.log(req);
-  console.log(req.body);
+function handleRegularItemMethod(req, res, err) {
+  if (err.name === "ValidationError" || err.name === "AssertionError") {
+    return res.status(errorCode400).send({
+      message:
+        "Invalid data passed to the methods for creating an item or updating an item, or invalid ID passed to the params.",
+    });
+  }
+  if (err.name === "CastError") {
+    return res.status(errorCode404).send({
+      message:
+        "There is no clothing item with the requested id, or the request was sent to a non-existent address.",
+    });
+  }
+  return res
+    .status(errorCode500)
+    .send({ message: "An error has occurred on the server", err });
+}
 
+function handleFindByIdItemCatchMethod(req, res, err) {
+  if (
+    err.name === "CastError" ||
+    err.name === "ValidationError" ||
+    err.name === "AssertionError"
+  ) {
+    return res.status(errorCode400).send({
+      message:
+        "Invalid data passed to the methods for creating an item or updating an item, or invalid ID passed to the params.",
+    });
+  }
+  if (err.name === "DocumentNotFoundError") {
+    return res.status(errorCode404).send({
+      message:
+        "There is no clothing item with the requested id, or the request was sent to a non-existent address.",
+    });
+  }
+  return res
+    .status(errorCode500)
+    .send({ message: "An error has occurred on the server", err });
+}
+
+const createItem = (req, res) => {
   const { name, weather, imageURL } = req.body;
 
-  ClothingItem.create({ name, weather, imageURL })
+  ClothingItem.create({ name, weather, imageURL, owner: req.user._id })
     .then((item) => {
-      console.log(item);
       res.send({ data: item });
     })
-    .catch((e) => {
-      res.status(500).send({ message: "Error from createItem", e });
+    .catch((err) => {
+      handleRegularItemMethod(req, res, err);
     });
 };
 
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch((e) => {
-      res.status(500).send({ message: "Error from getItems", e });
+    .catch((err) => {
+      handleRegularItemMethod(req, res, err);
     });
 };
 
@@ -32,25 +68,41 @@ const updateItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
-    .catch((e) =>
-      res.status(500).send({ message: "Error from updateItem", e })
-    );
+    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  console.log(itemId);
-  clothingItem
-    .findByIdAndDelete(itemId)
+  ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) =>
+    .then(() =>
       res
         .status(200)
-        .send({ message: "Item deleted successfully", data: item })
-        .catch((e) =>
-          res.status(500).send({ message: "Error from deleteItem", e })
-        )
+        .send({ message: "Item deleted successfully" })
+        .catch((err) => handleFindByIdItemCatchMethod(req, res, err))
     );
+};
+
+const likeItem = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    res.params.itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then(() => res.status(200).send({ message: "Item liked successfully" }))
+    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
+};
+
+const dislikeItem = (req, res) => {
+  ClothingItem.findByIdAndUpdate(
+    res.params.itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+    .orFail()
+    .then(() => res.status(200).send({ message: "Item disliked successfully" }))
+    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
 
 module.exports = {
@@ -58,4 +110,6 @@ module.exports = {
   getItems,
   updateItem,
   deleteItem,
+  likeItem,
+  dislikeItem,
 };
