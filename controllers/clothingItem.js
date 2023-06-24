@@ -1,5 +1,5 @@
-const clothingItem = require("../models/clothingItem");
 const ClothingItem = require("../models/clothingItem");
+const { errorCode400, errorCode404, errorCode500 } = require("../utils/errors");
 
 const createItem = (req, res) => {
   console.log(req);
