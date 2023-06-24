@@ -1,3 +1,4 @@
+const clothingItem = require("../models/clothingItem");
 const ClothingItem = require("../models/clothingItem");
 
 const createItem = (req, res) => {
@@ -36,8 +37,25 @@ const updateItem = (req, res) => {
     );
 };
 
+const deleteItem = (req, res) => {
+  const { itemId } = req.params;
+  console.log(itemId);
+  clothingItem
+    .findByIdAndDelete(itemId)
+    .orFail()
+    .then((item) =>
+      res
+        .status(200)
+        .send({ message: "Item deleted successfully", data: item })
+        .catch((e) =>
+          res.status(500).send({ message: "Error from deleteItem", e })
+        )
+    );
+};
+
 module.exports = {
   createItem,
   getItems,
   updateItem,
+  deleteItem,
 };
