@@ -42,10 +42,10 @@ function handleFindByIdItemCatchMethod(req, res, err) {
 }
 
 const createItem = (req, res) => {
-  const { name, weather, imageURL } = req.body;
+  const { name, weather, imageUrl } = req.body;
   const { _id } = req.user;
 
-  ClothingItem.create({ name, weather, imageURL, owner: _id })
+  ClothingItem.create({ name, weather, imageUrl, owner: _id })
     .then((item) => {
       res.send({ data: item });
     })
@@ -67,7 +67,11 @@ const updateItem = (req, res) => {
   const { imageURL } = req.body;
 
   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
-    .orFail()
+    .orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
@@ -75,7 +79,11 @@ const updateItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
-    .orFail()
+    .orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then(() =>
       res
         .status(200)
@@ -86,22 +94,30 @@ const deleteItem = (req, res) => {
 
 const likeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
-    res.params.itemId,
+    req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail()
+    .orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then(() => res.status(200).send({ message: "Item liked successfully" }))
     .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
 
 const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
-    res.params.itemId,
+    req.params.itemId,
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .orFail()
+    .orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then(() => res.status(200).send({ message: "Item disliked successfully" }))
     .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
