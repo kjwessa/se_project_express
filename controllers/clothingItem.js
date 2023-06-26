@@ -30,8 +30,8 @@ function handleFindByIdItemCatchMethod(req, res, err) {
         "Invalid data passed to the methods for creating an item or updating an item, or invalid ID passed to the params.",
     });
   }
-  if (err.name === "DocumentNotFoundError") {
-    return res.status(errorCode404).send({
+  if (err.statusCode) {
+    return res.status(err.statusCode).send({
       message:
         "There is no clothing item with the requested id, or the request was sent to a non-existent address.",
     });
@@ -98,11 +98,7 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = 404;
-      throw error;
-    })
+    .orFail()
     .then(() => res.status(200).send({ message: "Item liked successfully" }))
     .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
@@ -119,7 +115,9 @@ const dislikeItem = (req, res) => {
       throw error;
     })
     .then(() => res.status(200).send({ message: "Item disliked successfully" }))
-    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
+    .catch((err) => {
+      handleFindByIdItemCatchMethod(req, res, err);
+    });
 };
 
 module.exports = {
