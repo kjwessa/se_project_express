@@ -2,7 +2,7 @@ const User = require("../models/user");
 const { errorCode400, errorCode404, errorCode500 } = require("../utils/errors");
 
 function handleCatchMethod(req, res, err) {
-  if (err.name === "Validation Error" || err.name === "AssertionError") {
+  if (err.name === "ValidationError" || err.name === "AssertionError") {
     return res.status(errorCode400).send({
       message:
         "Invalid data passed to the methods for creating a user or invalid ID passes to the params.",
