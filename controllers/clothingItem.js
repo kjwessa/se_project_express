@@ -43,8 +43,9 @@ function handleFindByIdItemCatchMethod(req, res, err) {
 
 const createItem = (req, res) => {
   const { name, weather, imageURL } = req.body;
+  const { _id } = req.user;
 
-  ClothingItem.create({ name, weather, imageURL, owner: req.user._id })
+  ClothingItem.create({ name, weather, imageURL, owner: _id })
     .then((item) => {
       res.send({ data: item });
     })
