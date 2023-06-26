@@ -84,12 +84,8 @@ const deleteItem = (req, res) => {
       error.statusCode = 404;
       throw error;
     })
-    .then(() =>
-      res
-        .status(200)
-        .send({ message: "Item deleted successfully" })
-        .catch((err) => handleFindByIdItemCatchMethod(req, res, err))
-    );
+    .then(() => res.status(200).send({ message: "Item deleted successfully" }))
+    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
 
 const likeItem = (req, res) => {
@@ -98,7 +94,11 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail()
+    .orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then(() => res.status(200).send({ message: "Item liked successfully" }))
     .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
 };
