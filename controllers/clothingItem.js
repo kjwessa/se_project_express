@@ -1,45 +1,45 @@
 const ClothingItem = require("../models/clothingItem");
-const { errorCode400, errorCode404, errorCode500 } = require("../utils/errors");
+const { errorCode404, handleError } = require("../utils/errors");
 
-function handleRegularItemMethod(req, res, err) {
-  if (err.name === "ValidationError" || err.name === "AssertionError") {
-    return res.status(errorCode400).send({
-      message:
-        "Invalid data passed to the methods for creating an item or updating an item, or invalid ID passed to the params.",
-    });
-  }
-  if (err.name === "CastError") {
-    return res.status(errorCode404).send({
-      message:
-        "There is no clothing item with the requested id, or the request was sent to a non-existent address.",
-    });
-  }
-  return res
-    .status(errorCode500)
-    .send({ message: "An error has occurred on the server", err });
-}
+// function handleRegularItemMethod(req, res, err) {
+//   if (err.name === "ValidationError" || err.name === "AssertionError") {
+//     return res.status(errorCode400).send({
+//       message:
+//         "Invalid data passed to the methods for creating an item or updating an item, or invalid ID passed to the params.",
+//     });
+//   }
+//   if (err.name === "CastError") {
+//     return res.status(errorCode404).send({
+//       message:
+//         "There is no clothing item with the requested id, or the request was sent to a non-existent address.",
+//     });
+//   }
+//   return res
+//     .status(errorCode500)
+//     .send({ message: "An error has occurred on the server", err });
+// }
 
-function handleFindByIdItemCatchMethod(req, res, err) {
-  if (
-    err.name === "CastError" ||
-    err.name === "ValidationError" ||
-    err.name === "AssertionError"
-  ) {
-    return res.status(errorCode400).send({
-      message:
-        "Invalid data passed to the methods for creating an item or updating an item, or invalid ID passed to the params.",
-    });
-  }
-  if (err.statusCode) {
-    return res.status(err.statusCode).send({
-      message:
-        "There is no clothing item with the requested id, or the request was sent to a non-existent address.",
-    });
-  }
-  return res
-    .status(errorCode500)
-    .send({ message: "An error has occurred on the server", err });
-}
+// function handleFindByIdItemCatchMethod(req, res, err) {
+//   if (
+//     err.name === "CastError" ||
+//     err.name === "ValidationError" ||
+//     err.name === "AssertionError"
+//   ) {
+//     return res.status(errorCode400).send({
+//       message:
+//         "Invalid data passed to the methods for creating an item or updating an item, or invalid ID passed to the params.",
+//     });
+//   }
+//   if (err.statusCode) {
+//     return res.status(err.statusCode).send({
+//       message:
+//         "There is no clothing item with the requested id, or the request was sent to a non-existent address.",
+//     });
+//   }
+//   return res
+//     .status(errorCode500)
+//     .send({ message: "An error has occurred on the server", err });
+// }
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
@@ -50,7 +50,7 @@ const createItem = (req, res) => {
       res.send({ data: item });
     })
     .catch((err) => {
-      handleRegularItemMethod(req, res, err);
+      handleError(req, res, err);
     });
 };
 
@@ -58,7 +58,7 @@ const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
-      handleRegularItemMethod(req, res, err);
+      handleError(req, res, err);
     });
 };
 
@@ -73,7 +73,7 @@ const updateItem = (req, res) => {
       throw error;
     })
     .then((item) => res.status(200).send({ data: item }))
-    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
+    .catch((err) => handleError(req, res, err));
 };
 
 const deleteItem = (req, res) => {
@@ -81,11 +81,11 @@ const deleteItem = (req, res) => {
   ClothingItem.findByIdAndDelete(itemId)
     .orFail(() => {
       const error = new Error("Clothing item not found");
-      error.statusCode = 404;
+      error.statusCode = errorCode404;
       throw error;
     })
     .then(() => res.status(200).send({ message: "Item deleted successfully" }))
-    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
+    .catch((err) => handleError(req, res, err));
 };
 
 const likeItem = (req, res) => {
@@ -96,11 +96,11 @@ const likeItem = (req, res) => {
   )
     .orFail(() => {
       const error = new Error("Clothing item not found");
-      error.statusCode = 404;
+      error.statusCode = errorCode404;
       throw error;
     })
     .then(() => res.status(200).send({ message: "Item liked successfully" }))
-    .catch((err) => handleFindByIdItemCatchMethod(req, res, err));
+    .catch((err) => handleError(req, res, err));
 };
 
 const dislikeItem = (req, res) => {
@@ -111,12 +111,12 @@ const dislikeItem = (req, res) => {
   )
     .orFail(() => {
       const error = new Error("Clothing item not found");
-      error.statusCode = 404;
+      error.statusCode = errorCode404;
       throw error;
     })
     .then(() => res.status(200).send({ message: "Item disliked successfully" }))
     .catch((err) => {
-      handleFindByIdItemCatchMethod(req, res, err);
+      handleError(req, res, err);
     });
 };
 
