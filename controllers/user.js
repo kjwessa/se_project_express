@@ -5,9 +5,9 @@ const { JWT_SECRET } = require("../utils/config");
 
 const {
   errorCode400,
-  errorCode404,
-  errorCode500,
-  handleCatchMethod,
+  // errorCode404,
+  // errorCode500,
+  // handleCatchMethod,
   handleError,
   handleOnFailError,
 } = require("../utils/errors");
