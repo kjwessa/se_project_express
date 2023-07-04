@@ -2,7 +2,13 @@ const errorCode400 = 400;
 const errorCode404 = 404;
 const errorCode500 = 500;
 
-function handleError(req, res, err) {
+const handleOnFailError = () => {
+  const error = new Error("User not found");
+  error.statusCode = errorCode404;
+  throw error;
+};
+
+function handleError(res, err) {
   if (
     err.name === "ValidationError" ||
     err.name === "AssertionError" ||
@@ -52,4 +58,5 @@ module.exports = {
   errorCode500,
   handleError,
   handleCatchMethod,
+  handleOnFailError,
 };

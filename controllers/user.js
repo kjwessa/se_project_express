@@ -9,7 +9,9 @@ const {
   errorCode500,
   handleCatchMethod,
   handleError,
+  handleOnFailError,
 } = require("../utils/errors");
+const { get } = require("mongoose");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
@@ -21,51 +23,22 @@ const createUser = (req, res) => {
         delete userData.password;
         return res.status(201).send({ data: userData });
       })
-      .catch((err) => handleError(req, res, err));
+      .catch((err) => handleError(res, err));
   });
 };
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      handleCatchMethod(req, res, err);
-    });
-};
-
-const getUser = (req, res) => {
-  const { itemId } = req.params;
-
-  User.findById(itemId)
-    .orFail()
+const getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .orFail(() => {
+      handleOnFailError();
+    })
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(errorCode404).send({
-          message:
-            "There is no user with the requested id, or the request was sent to a non-existent address",
-        });
-      }
-      if (
-        err.name === "ValidationError" ||
-        err.name === "AssertionError" ||
-        err.name === "CastError"
-      ) {
-        return res.status(errorCode400).send({
-          message:
-            "Invalid data passed to the methods for creating an user or invalid ID passed to the params.",
-        });
-      }
-      return res
-        .status(errorCode500)
-        .send({ message: "An error has occurred on the server", err });
-    });
+    .catch((err) => handleError(res, err));
 };
 
 module.exports = {
-  getUsers,
-  getUser,
   createUser,
+  getCurrentUser,
 };
 
 // Backup below
