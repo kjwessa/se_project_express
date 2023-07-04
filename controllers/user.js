@@ -11,7 +11,7 @@ const {
   handleError,
   handleOnFailError,
 } = require("../utils/errors");
-const { get } = require("mongoose");
+// const { get } = require("mongoose");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
@@ -36,9 +36,42 @@ const getCurrentUser = (req, res) => {
     .catch((err) => handleError(res, err));
 };
 
+const updateCurrentUser = (req, res) => {
+  const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
+    .orFail(() => {
+      handleOnFailError();
+    })
+    .then((user) => res.status(200).send(user))
+    .catch((err) => handleError(res, err));
+};
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(errorCode400)
+      .send({ message: "You are not authorized to do this" });
+  }
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      res.send({
+        token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" }),
+      });
+    })
+    .catch((err) => handleError(res, err));
+};
+
 module.exports = {
   createUser,
   getCurrentUser,
+  updateCurrentUser,
+  login,
 };
 
 // Backup below
