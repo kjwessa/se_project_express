@@ -95,7 +95,6 @@ const deleteItem = (req, res) => {
       res.send({ message: "Item deleted successfully" });
     })
     .catch((err) => {
-      console.log(err);
       handleError(res, err);
     });
 };
