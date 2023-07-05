@@ -12,6 +12,13 @@ const {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
+  if (!email || !password) {
+    res.status(ERROR_CODES.BadRequest).json({
+      message: "Email and password are required",
+    });
+    return;
+  }
+
   User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
