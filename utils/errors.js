@@ -18,7 +18,7 @@ const handleOnFailError = () => {
   throw error;
 };
 
-const handleError = (err, res) => {
+const handleError = (res, err) => {
   if (err.name === "ValidationError" || err.name === "CastError") {
     res
       .status(ERROR_CODES.BadRequest)
@@ -27,9 +27,11 @@ const handleError = (err, res) => {
     res
       .status(ERROR_CODES.Unauthorized)
       .send({ message: "You are not authorized to do this" });
-  } else if (err.statusCode === 404) {
-    res.status(ERROR_CODES.NotFound).send({ message: "Item not found" });
-  } else if (err.code === 11000) {
+  } else if (err.statusCode === ERROR_CODES.Forbidden) {
+    res.status(ERROR_CODES.Forbidden).send({ message: "Access forbidden" });
+  } else if (err.statusCode === ERROR_CODES.NotFound) {
+    res.status(ERROR_CODES.NotFound).send({ err, message: "Item not found" });
+  } else if (err.code === ERROR_CODES.MongoError) {
     res.status(ERROR_CODES.AlreadyExistsError).send({
       message: "Email address is already being used, please try another email.",
     });
@@ -38,6 +40,35 @@ const handleError = (err, res) => {
       .status(ERROR_CODES.ServerError)
       .send({ message: "Something went wrong" });
   }
+};
+
+// const handleError = (res, err) => {
+//   if (err.name === "ValidationError" || err.name === "CastError") {
+//     res
+//       .status(ERROR_CODES.BadRequest)
+//       .send({ message: "Bad Request, Invalid input" });
+//   } else if (err.message === "Incorrect email or password") {
+//     res
+//       .status(ERROR_CODES.Unauthorized)
+//       .send({ message: "You are not authorized to do this" });
+//   } else if (err.statusCode === ERROR_CODES.NotFound) {
+//     res.status(ERROR_CODES.NotFound).send({ message: "Item not found" });
+//   } else if (err.code === ERROR_CODES.MongoError) {
+//     res.status(ERROR_CODES.AlreadyExistsError).send({
+//       message: "Email address is already being used, please try another email.",
+//     });
+//   } else {
+//     res
+//       .status(ERROR_CODES.ServerError)
+//       .send({ message: "Something went wrong" });
+//   }
+// };
+
+module.exports = {
+  ERROR_CODES,
+  handleError,
+  // handleCatchMethod,
+  handleOnFailError,
 };
 
 // const handleError = (res, err) => {
@@ -153,10 +184,3 @@ const handleError = (err, res) => {
 //     .status(errorCode500)
 //     .send({ message: "An error occurred on the server", err });
 // }
-
-module.exports = {
-  ERROR_CODES,
-  handleError,
-  // handleCatchMethod,
-  handleOnFailError,
-};

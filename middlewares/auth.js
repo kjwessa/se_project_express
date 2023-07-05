@@ -23,7 +23,7 @@ const handleAuthError = (req, res, next) => {
     req.user = payload;
     next();
   } catch (err) {
-    handleError(err, res);
+    handleError(res, err);
   }
 };
 
