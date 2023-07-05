@@ -72,9 +72,10 @@ const login = (req, res) => {
 
   if (!email || !password) {
     return res
-      .status(ERROR_CODES.Unauthorized)
-      .send({ message: "You are not authorized to do this" });
+      .status(ERROR_CODES.BadRequest)
+      .send({ message: "Email and password are required" });
   }
+
   return User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
