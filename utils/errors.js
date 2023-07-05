@@ -18,7 +18,7 @@ const handleOnFailError = () => {
   throw error;
 };
 
-const handleError = (res, err) => {
+const handleError = (err, res) => {
   if (err.name === "ValidationError" || err.name === "CastError") {
     res
       .status(ERROR_CODES.BadRequest)
@@ -39,6 +39,76 @@ const handleError = (res, err) => {
       .send({ message: "Something went wrong" });
   }
 };
+
+// const handleError = (res, err) => {
+//   if (err.name === "ValidationError" || err.name === "CastError") {
+//     res
+//       .status(ERROR_CODES.BadRequest)
+//       .send({ message: "Bad Request, Invalid input" });
+//   } else if (err.message === "Incorrect email or password") {
+//     res
+//       .status(ERROR_CODES.Unauthorized)
+//       .send({ message: "You are not authorized to do this" });
+//   } else if (err.statusCode === ERROR_CODES.NotFound) {
+//     res.status(ERROR_CODES.NotFound).send({ message: "Item not found" });
+//   } else if (err.name === "MongoError" && err.code === 11000) {
+//     res.status(ERROR_CODES.AlreadyExistsError).send({
+//       message: "Email address is already being used, please try another email.",
+//     });
+//   } else {
+//     res
+//       .status(ERROR_CODES.ServerError)
+//       .send({ message: "Something went wrong" });
+//   }
+// };
+
+// const handleError = (res, err) => {
+//   if (err.name === "ValidationError" || err.name === "CastError") {
+//     res
+//       .status(ERROR_CODES.BadRequest)
+//       .send({ message: "Bad Request, Invalid input", error: err.message });
+//   } else if (err.message === "Incorrect email or password") {
+//     res.status(ERROR_CODES.Unauthorized).send({
+//       message: "You are not authorized to do this",
+//       error: err.message,
+//     });
+//   } else if (err.statusCode === ERROR_CODES.NotFound) {
+//     res
+//       .status(ERROR_CODES.NotFound)
+//       .send({ message: "Item not found", error: err.message });
+//   } else if (err.name === "MongoError" && err.code === 11000) {
+//     res.status(ERROR_CODES.AlreadyExistsError).send({
+//       message: "Email address is already being used, please try another email.",
+//       error: err.message,
+//     });
+//   } else {
+//     res
+//       .status(ERROR_CODES.ServerError)
+//       .send({ message: "Something went wrong", error: err.message });
+//   }
+// };
+
+// const handleError = (res, err) => {
+//   if (err.name === "ValidationError" || err.name === "CastError") {
+//     res
+//       .status(ERROR_CODES.BadRequest)
+//       .send({ message: "Bad Request, Invalid input" });
+//   } else if (err.message === "Incorrect email or password") {
+//     res
+//       .status(ERROR_CODES.Unauthorized)
+//       .send({ message: "You are not authorized to do this" });
+//   } else if (err.statusCode === ERROR_CODES.NotFound) {
+//     res.status(ERROR_CODES.NotFound).send({ message: "Item not found" });
+//   } else if (err.code === ERROR_CODES.MongoError) {
+//     res.status(ERROR_CODES.AlreadyExistsError).send({
+//       message: "Email address is already being used, please try another email.",
+//     });
+//   } else {
+//     res
+//       .status(ERROR_CODES.ServerError)
+//       .send({ message: "Something went wrong" });
+//   }
+// };
 
 // function handleError(res, err) {
 //   if (

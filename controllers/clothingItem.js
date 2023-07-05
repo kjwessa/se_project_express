@@ -1,16 +1,20 @@
 const ClothingItem = require("../models/clothingItem");
-const { errorCode404, handleError } = require("../utils/errors");
+const {
+  ERROR_CODES,
+  handleError,
+  handleOnFailError,
+} = require("../utils/errors");
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
-  const { _id } = req.user;
+  const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl, owner: _id })
+  ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
       res.send({ data: item });
     })
     .catch((err) => {
-      handleError(req, res, err);
+      handleError(res, err);
     });
 };
 
@@ -18,7 +22,7 @@ const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
-      handleError(req, res, err);
+      handleError(res, err);
     });
 };
 
@@ -28,24 +32,20 @@ const updateItem = (req, res) => {
 
   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
     .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = 404;
-      throw error;
+      handleOnFailError();
     })
     .then((item) => res.status(200).send({ data: item }))
-    .catch((err) => handleError(req, res, err));
+    .catch((err) => handleError(res, err));
 };
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
     .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = errorCode404;
-      throw error;
+      handleOnFailError();
     })
     .then(() => res.status(200).send({ message: "Item deleted successfully" }))
-    .catch((err) => handleError(req, res, err));
+    .catch((err) => handleError(res, err));
 };
 
 const likeItem = (req, res) => {
@@ -56,11 +56,11 @@ const likeItem = (req, res) => {
   )
     .orFail(() => {
       const error = new Error("Clothing item not found");
-      error.statusCode = errorCode404;
+      error.statusCode = ERROR_CODES.NotFound;
       throw error;
     })
     .then(() => res.status(200).send({ message: "Item liked successfully" }))
-    .catch((err) => handleError(req, res, err));
+    .catch((err) => handleError(res, err));
 };
 
 const dislikeItem = (req, res) => {
@@ -71,12 +71,12 @@ const dislikeItem = (req, res) => {
   )
     .orFail(() => {
       const error = new Error("Clothing item not found");
-      error.statusCode = errorCode404;
+      error.statusCode = ERROR_CODES.NotFound;
       throw error;
     })
     .then(() => res.status(200).send({ message: "Item disliked successfully" }))
     .catch((err) => {
-      handleError(req, res, err);
+      handleError(res, err);
     });
 };
 

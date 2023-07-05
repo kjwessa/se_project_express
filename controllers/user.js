@@ -4,50 +4,41 @@ const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
 const {
-  // errorCode400,
-  // errorCode404,
-  // errorCode500,
-  // handleCatchMethod,
   handleError,
   handleOnFailError,
   ERROR_CODES,
 } = require("../utils/errors");
-// const { get } = require("mongoose");
 
 // const createUser = (req, res) => {
 //   const { name, avatar, email, password } = req.body;
 
-//   bcrypt.hash(password, 10).then((hash) => {
-//     User.create({ name, avatar, email, password: hash })
-//       .then((user) => {
-//         const userData = user.toObject();
-//         delete userData.password;
-//         return res.status(201).send({ data: userData });
-//       })
-//       .catch((err) => handleError(res, err));
-//   });
+//   bcrypt
+//     .hash(password, 10)
+//     .then((hash) => {
+//       User.create({ name, avatar, email, password: hash })
+//         .then((user) => {
+//           const userData = user.toObject();
+//           delete userData.password;
+//           res.status(201).send({ data: userData });
+//         })
+//         .catch((err) => handleError(res, err));
+//     })
+//     .catch((err) => handleError(res, err));
 // };
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  User.findOne({ email })
-    .then((existingUser) => {
-      if (existingUser) {
-        return res
-          .status(ERROR_CODES.AlreadyExistsError)
-          .send({ message: "User with this email already exists" });
-      }
-
-      return bcrypt.hash(password, 10).then((hash) => {
-        User.create({ name, avatar, email, password: hash })
-          .then((user) => {
-            const userData = user.toObject();
-            delete userData.password;
-            return res.status(201).send({ data: userData });
-          })
-          .catch((err) => handleError(res, err));
-      });
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => {
+      User.create({ name, avatar, email, password: hash })
+        .then((user) => {
+          const userData = user.toObject();
+          delete userData.password;
+          res.status(201).send({ data: userData });
+        })
+        .catch((err) => handleError(res, err));
     })
     .catch((err) => handleError(res, err));
 };

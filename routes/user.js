@@ -9,9 +9,9 @@ const { getCurrentUser, updateCurrentUser } = require("../controllers/user");
 // READ
 // router.get("/", getUsers);
 // router.get("/:itemId", getUser);
-router.get("/me", auth, getCurrentUser);
+router.get("/me", auth.handleAuthError, getCurrentUser);
 
 // Update
-router.patch("/me", auth, updateCurrentUser);
+router.patch("/me", auth.handleAuthError, updateCurrentUser);
 
 module.exports = router;

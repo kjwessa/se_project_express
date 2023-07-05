@@ -1,17 +1,17 @@
 const router = require("express").Router();
-const User = require("./user");
 const clothingItem = require("./clothingItem");
+const User = require("./user");
 const { createUser, login } = require("../controllers/user");
-const { errorCode404 } = require("../utils/errors");
+const { ERROR_CODES } = require("../utils/errors");
+const auth = require("../middlewares/auth");
 
+router.use("/items", clothingItem);
+router.use("/users", auth.handleAuthError, User);
 router.post("/signup", createUser);
 router.post("/signin", login);
 
-router.use("/items", clothingItem);
-router.use("/users", User);
-
 router.use((req, res) => {
-  res.status(errorCode404).send({
+  res.status(ERROR_CODES.NotFound).send({
     message: "Requested resource not found",
   });
 });
