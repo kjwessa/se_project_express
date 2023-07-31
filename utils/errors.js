@@ -18,7 +18,7 @@ const handleError = (res, err) => {
   if (err.name === "ValidationError" || err.name === "CastError") {
     res
       .status(ERROR_CODES.BadRequest)
-      .send({ message: "Bad Request, Invalid input" });
+      .send({ message: "Bad Request, Invalid input!" });
   } else if (err.message === "Incorrect email or password") {
     res
       .status(ERROR_CODES.Unauthorized)

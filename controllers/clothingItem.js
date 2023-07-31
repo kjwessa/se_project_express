@@ -71,7 +71,9 @@ const likeItem = (req, res) => {
       error.statusCode = ERROR_CODES.NotFound;
       throw error;
     })
-    .then(() => res.status(200).send({ message: "Item liked successfully" }))
+    .then((card) =>
+      res.status(200).send({ card, message: "Item liked successfully" })
+    )
     .catch((err) => handleError(res, err));
 };
 
@@ -86,7 +88,9 @@ const dislikeItem = (req, res) => {
       error.statusCode = ERROR_CODES.NotFound;
       throw error;
     })
-    .then(() => res.status(200).send({ message: "Item disliked successfully" }))
+    .then((card) =>
+      res.status(200).send({ card, message: "Item disliked successfully" })
+    )
     .catch((err) => {
       handleError(res, err);
     });
