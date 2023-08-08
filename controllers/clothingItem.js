@@ -82,21 +82,26 @@ const deleteItem = (req, res, next) => {
   });
 };
 
-const likeItem = (req, res) => {
+// TODO ? - should I send the card + message, or { data: item }
+const likeItem = (req, res, next) => {
+  const { itemId } = req.params;
+  const { _id: userId } = req.user;
+
+  if (!ObjectId.isValid(itemId)) {
+    next(new BadRequestError("Invalid item ID"));
+    return;
+  }
+
   ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { $addToSet: { likes: req.user._id } },
+    itemId,
+    { $addToSet: { likes: userId } },
     { new: true }
   )
-    .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = ERROR_CODES.NotFound;
-      throw error;
-    })
+    .orFail(() => new NotFoundError("Clothing item ID cannot be found"))
     .then((card) =>
       res.status(200).send({ card, message: "Item liked successfully" })
     )
-    .catch((err) => handleError(res, err));
+    .catch((err) => next(err));
 };
 
 const dislikeItem = (req, res) => {
