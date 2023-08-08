@@ -29,30 +29,36 @@ const createItem = (req, res, next) => {
     });
 };
 
-// TODO ? - should I remove the status(200) code?
-
 const getItems = (req, res, next) => {
   ClothingItem.find()
-    .then((items) => res.status(200).send(items))
+    .then((items) => res.send(items))
     .catch((err) => {
       next(err);
     });
 };
 
-// TODO ? - Update the error handler here
-const updateItem = (req, res) => {
+const updateItem = (req, res, next) => {
   const { itemId } = req.params;
   const { imageURL } = req.body;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } }, { new: true })
     .orFail(() => {
-      handleOnFailError();
+      next(new NotFoundError("Clothing item ID cannot be found"));
     })
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((err) => handleError(res, err));
+    .then((item) => {
+      if (!item) {
+        next(new NotFoundError("Clothing item ID cannot be found"));
+      }
+      res.send({ data: item });
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("Validation Error"));
+      } else {
+        next(err);
+      }
+    });
 };
-
-// TODO ? - shoudl I destructure the userID here?
 
 const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
@@ -104,22 +110,26 @@ const likeItem = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
+  const { itemId } = req.params;
+  const { _id: userId } = req.user;
+
+  if (!ObjectId.isValid(itemId)) {
+    next(new BadRequestError("Invalid item ID"));
+    return;
+  }
+
   ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { $pull: { likes: req.user._id } },
+    itemId,
+    { $pull: { likes: userId } },
     { new: true }
   )
-    .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = ERROR_CODES.NotFound;
-      throw error;
-    })
+    .orFail(() => new NotFoundError("Clothing item ID cannot be found"))
     .then((card) =>
       res.status(200).send({ card, message: "Item disliked successfully" })
     )
     .catch((err) => {
-      handleError(res, err);
+      next(err);
     });
 };
 
