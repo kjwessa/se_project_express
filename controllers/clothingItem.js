@@ -35,7 +35,7 @@ const getItems = (req, res, next) => {
   ClothingItem.find()
     .then((items) => res.status(200).send(items))
     .catch((err) => {
-      handleError(res, err);
+      next(err);
     });
 };
 
