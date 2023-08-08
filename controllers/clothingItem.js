@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const { ObjectID } = mongoose.Types;
+const { ObjectId } = mongoose.Types;
 
 const ClothingItem = require("../models/clothingItem");
 const ForbiddenError = require("../errors/forbidden");
@@ -39,6 +39,7 @@ const getItems = (req, res, next) => {
     });
 };
 
+// TODO ? - Update the error handler here
 const updateItem = (req, res) => {
   const { itemId } = req.params;
   const { imageURL } = req.body;
@@ -51,26 +52,34 @@ const updateItem = (req, res) => {
     .catch((err) => handleError(res, err));
 };
 
-const deleteItem = (req, res) => {
+// TODO ? - shoudl I destructure the userID here?
+
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
-  ClothingItem.findById(itemId)
-    .orFail(() => {
-      handleOnFailError();
-    })
-    .then((item) => {
-      if (String(item.owner) !== req.user._id) {
-        const error = new Error("You are not authorized to delete this item");
-        error.statusCode = ERROR_CODES.Forbidden;
-        throw error;
-      }
-      return ClothingItem.findByIdAndDelete(item._id);
-    })
-    .then(() => {
-      res.send({ message: "Item deleted successfully" });
-    })
-    .catch((err) => {
-      handleError(res, err);
-    });
+  const { _id: userId } = req.user;
+
+  if (!ObjectId.isValid(itemId)) {
+    next(new BadRequestError("Invalid item ID"));
+    return;
+  }
+
+  ClothingItem.findOne({ _id: itemId }).then((item) => {
+    if (!item) {
+      next(new NotFoundError("Clothing item ID cannot be found"));
+      return null;
+    }
+    if (!item?.owner?.equals(userId)) {
+      next(new ForbiddenError("Unauthorized: You are not the card owner"));
+      return null;
+    }
+    return ClothingItem.deleteOne({ _id: itemId, owner: userId })
+      .then(() => {
+        res.send({ message: "Item deleted successfully" });
+      })
+      .catch((error) => {
+        next(error);
+      });
+  });
 };
 
 const likeItem = (req, res) => {
