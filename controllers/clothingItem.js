@@ -1,9 +1,4 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  ERROR_CODES,
-  handleError,
-  handleOnFailError,
-} = require("../utils/errors");
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
