@@ -1,20 +1,38 @@
-const ClothingItem = require("../models/clothingItem");
+const mongoose = require("mongoose");
 
-const createItem = (req, res) => {
+const { ObjectID } = mongoose.Types;
+
+const ClothingItem = require("../models/clothingItem");
+const ForbiddenError = require("../errors/forbidden");
+const BadRequestError = require("../errors/invalidData");
+const NotFoundError = require("../errors/notFound");
+
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
+
+  if (!name && !weather && !imageUrl) {
+    next(new BadRequestError("Missing the required fields"));
+    return;
+  }
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
       res.send({ data: item });
     })
     .catch((err) => {
-      handleError(res, err);
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("Validation Error"));
+      } else {
+        next(err);
+      }
     });
 };
 
-const getItems = (req, res) => {
-  ClothingItem.find({})
+// TODO ? - should I remove the status(200) code?
+
+const getItems = (req, res, next) => {
+  ClothingItem.find()
     .then((items) => res.status(200).send(items))
     .catch((err) => {
       handleError(res, err);
