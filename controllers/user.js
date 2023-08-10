@@ -88,19 +88,39 @@ const getCurrentUser = (req, res, next) => {
 //     .catch((err) => handleError(res, err));
 // };
 
-const updateCurrentUser = (req, res) => {
+const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
+  const userId = req.user._id;
+
   User.findByIdAndUpdate(
-    req.user._id,
+    userId,
     { name, avatar },
     { new: true, runValidators: true }
   )
-    .orFail(() => {
-      handleOnFailError();
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError("User not found"));
+      }
+      res.send({ data: user });
     })
-    .then((user) => res.status(200).send(user))
-    .catch((err) => handleError(res, err));
+    .catch((error) => {
+      next(error);
+    });
 };
+
+// const updateCurrentUser = (req, res) => {
+//   const { name, avatar } = req.body;
+//   User.findByIdAndUpdate(
+//     req.user._id,
+//     { name, avatar },
+//     { new: true, runValidators: true }
+//   )
+//     .orFail(() => {
+//       handleOnFailError();
+//     })
+//     .then((user) => res.status(200).send(user))
+//     .catch((err) => handleError(res, err));
+// };
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
