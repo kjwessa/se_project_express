@@ -29,13 +29,19 @@ const createUser = (req, res, next) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
-  User.findById(req.user._id)
-    .orFail(() => {
-      handleOnFailError();
+const getCurrentUser = (req, res, next) => {
+  const { _id: userId } = req.user;
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError("User not found"));
+      }
+      res.send({ data: user });
     })
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => handleError(res, err));
+    .catch((error) => {
+      next(error);
+    });
 };
 
 const updateCurrentUser = (req, res) => {
