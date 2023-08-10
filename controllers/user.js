@@ -2,40 +2,31 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
+const ConflictError = require("../errors/conflict");
+const NotFoundError = require("../errors/notFound");
+const UnauthorizedError = require("../errors/unauthorized");
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
-  if (!email || !password) {
-    res.status(ERROR_CODES.BadRequest).json({
-      message: "Email and password are required",
-    });
-    return;
+  if (!password) {
+    return next(new UnauthorizedError("Password is required"));
   }
 
-  User.findOne({ email })
-    .then((existingUser) => {
-      if (existingUser) {
-        res.status(ERROR_CODES.AlreadyExistsError).json({
-          message: "Email address is already in use",
-        });
-        return;
-      }
-
-      bcrypt
-        .hash(password, 10)
-        .then((hash) => {
-          User.create({ name, avatar, email, password: hash })
-            .then((user) => {
-              const userData = user.toObject();
-              delete userData.password;
-              res.status(201).json({ data: userData });
-            })
-            .catch((err) => handleError(res, err));
-        })
-        .catch((err) => handleError(res, err));
+  User.findOne({ email }).then((res) => {
+    if (res) {
+      return next(new ConflictError("Email already exists in database"));
+    }
+  });
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
+    .then((user) => {
+      res.send({ name, avatar, _id: user._id, email: user.email });
     })
-    .catch((err) => handleError(res, err));
+    .catch((error) => {
+      next(error);
+    });
 };
 
 const getCurrentUser = (req, res) => {
