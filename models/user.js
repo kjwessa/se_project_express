@@ -62,3 +62,5 @@ user.statics.findUserByCredentials = function findUserByCredentials(
 };
 
 module.exports = mongoose.model("user", user);
+
+// TODO ? - Consider renaming the export to User to match convention
