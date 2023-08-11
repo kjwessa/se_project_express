@@ -73,6 +73,18 @@ const validateId = celebrate({
   }),
 });
 
+const validateProfileAvatar = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30).messages({
+      "string.empty": 'The "name" field must be filled in',
+    }),
+    avatar: Joi.string().required().custom(validateUrl).messages({
+      "string.empty": 'The "avatar" field must be filled in',
+      "string.uri": 'The "avatar" field must be a valid url',
+    }),
+  }),
+});
+
 module.exports = {
   validateUrl,
   validateEmail,
@@ -80,4 +92,5 @@ module.exports = {
   validateUser,
   validateAuth,
   validateId,
+  validateProfileAvatar,
 };
