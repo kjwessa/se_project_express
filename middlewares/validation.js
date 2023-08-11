@@ -52,9 +52,22 @@ const validateUser = celebrate({
   }),
 });
 
+const validateAuth = celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().custom(validateEmail).messages({
+      "string.empty": 'The "email" field must be filled in',
+      "string.email": 'The "email" field must be a valid email address',
+    }),
+    password: Joi.string().required().messages({
+      "string.empty": 'The "password" field must be filled in',
+    }),
+  }),
+});
+
 module.exports = {
   validateUrl,
   validateEmail,
   validateClothingItem,
   validateUser,
+  validateAuth,
 };
