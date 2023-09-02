@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
 const { ObjectId } = mongoose.Types;
-
 const ClothingItem = require("../models/clothingItem");
 const ForbiddenError = require("../errors/forbidden");
 const BadRequestError = require("../errors/invalidData");
@@ -18,7 +17,7 @@ const createItem = (req, res, next) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => {
-      res.send({ data: item });
+      res.status(201).send({ data: item });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -34,29 +33,6 @@ const getItems = (req, res, next) => {
     .then((items) => res.send(items))
     .catch((err) => {
       next(err);
-    });
-};
-
-const updateItem = (req, res, next) => {
-  const { itemId } = req.params;
-  const { imageURL } = req.body;
-
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } }, { new: true })
-    .orFail(() => {
-      next(new NotFoundError("Clothing item ID cannot be found"));
-    })
-    .then((item) => {
-      if (!item) {
-        next(new NotFoundError("Clothing item ID cannot be found"));
-      }
-      res.send({ data: item });
-    })
-    .catch((err) => {
-      if (err.name === "ValidationError") {
-        next(new BadRequestError("Validation Error"));
-      } else {
-        next(err);
-      }
     });
 };
 
@@ -86,6 +62,29 @@ const deleteItem = (req, res, next) => {
         next(error);
       });
   });
+};
+
+const updateItem = (req, res, next) => {
+  const { itemId } = req.params;
+  const { imageURL } = req.body;
+
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } }, { new: true })
+    .orFail(() => {
+      next(new NotFoundError("Clothing item ID cannot be found"));
+    })
+    .then((item) => {
+      if (!item) {
+        next(new NotFoundError("Clothing item ID cannot be found"));
+      }
+      res.send({ data: item });
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("Validation Error"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 // TODO ? - should I send the card + message, or { data: item }
