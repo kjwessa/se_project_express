@@ -1,21 +1,21 @@
 const router = require("express").Router();
 const clothingItem = require("./clothingItem");
 const User = require("./user");
+const NotFoundError = require("../errors/notFound");
 const { createUser, login } = require("../controllers/user");
-const { ERROR_CODES } = require("../utils/errors");
 const auth = require("../middlewares/auth");
+const { validateUser, validateAuth } = require("../middlewares/validation");
 
 router.use("/items", clothingItem);
 router.use("/users", auth.handleAuthError, User);
-
 router.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
   }, 0);
 });
 
-router.post("/signup", createUser);
-router.post("/signin", login);
+router.post("/signup", validateUser, createUser);
+router.post("/signin", validateAuth, login);
 
 router.use((req, res) => {
   res.status(ERROR_CODES.NotFound).send({
