@@ -5,8 +5,8 @@ const { JWT_SECRET } = require("../utils/config");
 const ConflictError = require("../errors/conflict");
 const NotFoundError = require("../errors/notFound");
 const UnauthorizedError = require("../errors/unauthorized");
+const BadRequestError = require("../errors/invalidData");
 
-// TODO: Final version below
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
@@ -27,12 +27,15 @@ const createUser = (req, res, next) => {
           });
       }
     })
-    .catch((error) => {
-      next(error);
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("Validation Error"));
+      } else {
+        next(err);
+      }
     });
 };
 
-// TODO: Final version below
 const getCurrentUser = (req, res, next) => {
   const { _id: userId } = req.user;
 
