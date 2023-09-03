@@ -87,7 +87,6 @@ const updateItem = (req, res, next) => {
     });
 };
 
-// TODO ? - should I send the card + message, or { data: item }
 const likeItem = (req, res, next) => {
   const { itemId } = req.params;
   const { _id: userId } = req.user;
@@ -124,9 +123,7 @@ const dislikeItem = (req, res, next) => {
     { new: true }
   )
     .orFail(() => new NotFoundError("Clothing item ID cannot be found"))
-    .then((card) =>
-      res.status(200).send({ card, message: "Item disliked successfully" })
-    )
+    .then((card) => res.send({ card, message: "Item disliked successfully" }))
     .catch((err) => {
       next(err);
     });
