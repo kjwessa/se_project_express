@@ -66,8 +66,12 @@ const updateCurrentUser = (req, res, next) => {
       }
       return res.send({ data: user });
     })
-    .catch((error) => {
-      next(error);
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("Validation Error"));
+      } else {
+        next(err);
+      }
     });
 };
 
