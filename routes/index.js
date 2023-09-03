@@ -17,10 +17,8 @@ router.get("/crash-test", () => {
 router.post("/signup", validateUser, createUser);
 router.post("/signin", validateAuth, login);
 
-router.use((req, res) => {
-  res.status(ERROR_CODES.NotFound).send({
-    message: "Requested resource not found",
-  });
+router.use("*", (req, res, next) => {
+  next(new NotFoundError("Router not found"));
 });
 
 module.exports = router;
