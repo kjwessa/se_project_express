@@ -10,13 +10,14 @@ const { requestLogger, errorLogger } = require("./middlewares/logger");
 const { PORT = 3000 } = process.env;
 const app = express();
 
-mongoose.connect(
-  "mongodb://127.0.0.1:27017/wtwr_db",
-  (res) => {
-    console.log("We are connected to the DB", res);
-  },
-  (err) => console.log("There is an error connecting to DB", err)
-);
+mongoose
+  .connect("mongodb://127.0.0.1:27017/wtwr_db")
+  .then(() => {
+    console.log("Connected to the DB");
+  })
+  .catch((err) => {
+    console.log("There is an error connecting to DB", err);
+  });
 
 app.use(cors());
 app.use(express.json());
