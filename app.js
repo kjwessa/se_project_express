@@ -2,7 +2,6 @@ require("dotenv").config();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const express = require("express");
-const { errors } = require("celebrate");
 const errorHandler = require("./middlewares/errorHandler");
 const routes = require("./routes");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
@@ -28,9 +27,6 @@ app.use(routes);
 
 // our logger
 app.use(errorLogger);
-
-// celebrate error handler
-app.use(errors());
 
 // our centralized handler
 app.use(errorHandler);
